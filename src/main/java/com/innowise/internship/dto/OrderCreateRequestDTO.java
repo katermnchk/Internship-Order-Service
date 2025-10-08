@@ -19,7 +19,7 @@ public class OrderCreateRequestDTO {
   @NotNull(message = "User ID must not be null")
   Long userId;
 
-  @NotBlank(message = "Status cannot be empty (e.g., NEW)")
+  @NotBlank(message = "Status cannot be empty")
   String status;
 
   @Valid
