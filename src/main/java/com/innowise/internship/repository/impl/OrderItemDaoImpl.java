@@ -1,7 +1,7 @@
 package com.innowise.internship.repository.impl;
 
 import com.innowise.internship.entity.OrderItem;
-import com.innowise.internship.mapper.OrderItemRowMapper;
+import com.innowise.internship.mapper.rowMapper.OrderItemRowMapper;
 import com.innowise.internship.repository.OrderItemDao;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

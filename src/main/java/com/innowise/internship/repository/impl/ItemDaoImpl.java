@@ -1,7 +1,7 @@
 package com.innowise.internship.repository.impl;
 
 import com.innowise.internship.entity.Item;
-import com.innowise.internship.mapper.ItemRowMapper;
+import com.innowise.internship.mapper.rowMapper.ItemRowMapper;
 import com.innowise.internship.repository.ItemDao;
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.innowise.internship.mapper;
+package com.innowise.internship.mapper.rowMapper;
 
 import com.innowise.internship.entity.Item;
 import java.sql.ResultSet;

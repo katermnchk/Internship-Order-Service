@@ -1,8 +1,8 @@
 package com.innowise.internship.config;
 
-import com.innowise.internship.mapper.ItemRowMapper;
-import com.innowise.internship.mapper.OrderItemRowMapper;
-import com.innowise.internship.mapper.OrderRowMapper;
+import com.innowise.internship.mapper.rowMapper.ItemRowMapper;
+import com.innowise.internship.mapper.rowMapper.OrderItemRowMapper;
+import com.innowise.internship.mapper.rowMapper.OrderRowMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

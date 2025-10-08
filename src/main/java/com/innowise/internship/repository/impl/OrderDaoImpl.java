@@ -2,7 +2,7 @@ package com.innowise.internship.repository.impl;
 
 import com.innowise.internship.entity.Order;
 import com.innowise.internship.entity.OrderStatus;
-import com.innowise.internship.mapper.OrderRowMapper;
+import com.innowise.internship.mapper.rowMapper.OrderRowMapper;
 import com.innowise.internship.repository.OrderDao;
 import java.sql.PreparedStatement;
 import java.util.List;
