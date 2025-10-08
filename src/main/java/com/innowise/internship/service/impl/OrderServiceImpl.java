@@ -7,8 +7,6 @@ import com.innowise.internship.entity.Order;
 import com.innowise.internship.entity.OrderItem;
 import com.innowise.internship.entity.OrderStatus;
 import com.innowise.internship.exception.OrderNotFoundException;
-import com.innowise.internship.exception.UserNotFoundException;
-import com.innowise.internship.exception.UserServiceUnavailableException;
 import com.innowise.internship.mapper.OrderItemMapper;
 import com.innowise.internship.mapper.OrderMapper;
 import com.innowise.internship.repository.OrderDao;
@@ -16,7 +14,6 @@ import com.innowise.internship.repository.OrderItemDao;
 import com.innowise.internship.service.OrderService;
 import com.innowise.internship.service.UserServiceClient;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,13 +31,13 @@ public class OrderServiceImpl implements OrderService {
 
   private void loadOrderItems(Order order) {
     if (order.getItems() == null) {
-      order.setItems(orderItemDao.findByOrderId(order.getUserId()));
+      order.setItems(orderItemDao.findByOrderId(order.getId()));
     }
   }
 
   private OrderResponseDTO enrichResponse(Order order) {
     loadOrderItems(order);
-    UserDTO userInfo = userClient.getUserById(order.getId());
+    UserDTO userInfo = userClient.getUserById(order.getUserId());
     OrderResponseDTO baseResponse = orderMapper.toResponseDto(order);
 
     return new OrderResponseDTO(
@@ -70,9 +67,11 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public Optional<OrderResponseDTO> getOrderById(Long id) {
-    return orderDao.findById(id)
-        .map(this::enrichResponse);
+  public OrderResponseDTO getOrderById(Long id) {
+    Order order = orderDao.findById(id)
+        .orElseThrow(() -> new OrderNotFoundException(id));
+
+    return enrichResponse(order);
   }
 
   @Override

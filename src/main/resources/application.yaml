@@ -11,6 +11,12 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/main-changelog.xml
 
+app:
+  api:
+    base-path: /api/v1
+  auth-service:
+    validate-url: ${AUTH_SERVICE_VALIDATE_URL}
+
 user:
   service:
     url: ${USER_SERVICE_URL}
