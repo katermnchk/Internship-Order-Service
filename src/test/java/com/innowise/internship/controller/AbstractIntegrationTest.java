@@ -22,11 +22,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 
 @SpringBootTest(
-    classes = com.innowise.internship.InnowiseOrdersServiceApplication.class,
-    properties = {
-        "AUTH_SERVICE_VALIDATE_URL=http://localhost:8089/api/v1/auth/validate",
-        "USER_SERVICE_URL=http://localhost:8089/api/v1"
-    }
+    classes = com.innowise.internship.InnowiseOrdersServiceApplication.class
 )
 @Testcontainers
 @AutoConfigureMockMvc(addFilters = false)
@@ -84,8 +80,12 @@ public abstract class AbstractIntegrationTest {
 
   @DynamicPropertySource
   static void registerProperties(DynamicPropertyRegistry registry) {
-    registry.add("AUTH_SERVICE_VALIDATE_URL", () -> "http://localhost:8089/api/v1/auth/validate");
+    registry.add("AUTH_SERVICE_VALIDATE_URL",
+        () -> "http://localhost:8089/api/v1/auth/validate");
+    registry.add("USER_SERVICE_URL",
+        () -> "http://localhost:8089/api/v1");
   }
+
 
   @Autowired
   protected MockMvc mockMvc;

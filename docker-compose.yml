@@ -1,0 +1,48 @@
+services:
+  postgres_order_service:
+    image: postgres:15
+    container_name: postgres_order_service
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT:-5434}:5432"
+    volumes:
+      - pgdata_order_service:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app_network
+
+  order-service:
+    build: .
+    image: order-service:latest
+    container_name: innowise-order-service
+    depends_on:
+      postgres_order_service:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_order_service:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+      AUTH_SERVICE_VALIDATE_URL: ${AUTH_SERVICE_VALIDATE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      - app_network
+
+volumes:
+  pgdata_order_service:
+
+networks:
+  app_network:
+    external: true
