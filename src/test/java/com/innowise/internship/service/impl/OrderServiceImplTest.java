@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -95,6 +96,10 @@ class OrderServiceImplTest {
     when(orderDao.save(orderEntity)).thenReturn(orderEntity);
     when(createDto.getStatus()).thenReturn("new");
     when(orderItemMapper.toEntityList(any())).thenReturn(items);
+    when(orderDao.findById(orderEntity.getId())).thenReturn(Optional.of(orderEntity));
+    when(userClient.getUserById(anyLong())).thenReturn(mock(UserDTO.class));
+    when(orderMapper.toResponseDto(any(Order.class))).thenReturn(mock(OrderResponseDTO.class));
+    when(orderItemDao.findByOrderId(anyLong())).thenReturn(items);
 
     orderService.createOrder(createDto);
 
