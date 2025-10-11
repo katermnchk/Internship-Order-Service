@@ -56,12 +56,15 @@ public class OrderServiceImpl implements OrderService {
     Order order = orderMapper.toEntity(orderDto);
     order.setStatus(OrderStatus.valueOf(orderDto.getStatus().toUpperCase()));
 
-    Order savedOrder = orderDao.save(order);
+    Order initialOrder = orderDao.save(order);
+    Order savedOrder = orderDao.findById(initialOrder.getId()).get();
 
-    List<OrderItem> items = orderItemMapper.toEntityList(orderDto.getItems());
-    items.forEach(item -> item.setOrderId(savedOrder.getId()));
-    orderItemDao.saveAll(items);
-    savedOrder.setItems(items);
+    List<OrderItem> itemsToSave = orderItemMapper.toEntityList(orderDto.getItems());
+    itemsToSave.forEach(item -> item.setOrderId(savedOrder.getId()));
+    orderItemDao.saveAll(itemsToSave);
+
+    List<OrderItem> savedItems = orderItemDao.findByOrderId(savedOrder.getId());
+    savedOrder.setItems(savedItems);
 
     return enrichResponse(savedOrder);
   }

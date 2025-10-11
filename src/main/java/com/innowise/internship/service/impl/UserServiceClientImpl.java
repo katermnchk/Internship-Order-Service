@@ -1,6 +1,7 @@
 package com.innowise.internship.service.impl;
 
 import com.innowise.internship.dto.UserDTO;
+import com.innowise.internship.dto.response.UserApiResponse;
 import com.innowise.internship.exception.UserNotFoundException;
 import com.innowise.internship.exception.UserServiceUnavailableException;
 import com.innowise.internship.service.UserServiceClient;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
@@ -20,33 +22,36 @@ import org.springframework.web.client.RestTemplate;
 public class UserServiceClientImpl implements UserServiceClient {
 
   private final RestTemplate restTemplate;
-  private final AuthServiceClient authServiceClient;
 
   @Value("${user.service.url}")
   private String userServiceBaseUrl;
-
-  private HttpHeaders createHeadersWithToken() {
-    HttpHeaders headers = new HttpHeaders();
-    String token = authServiceClient.getToken("order-service", "secret");
-    headers.setBearerAuth(token);
-    return headers;
-  }
 
   @Override
   public UserDTO getUserById(Long userId) {
     String url = userServiceBaseUrl + "/users/" + userId;
 
     try {
-      HttpEntity<Void> entity = new HttpEntity<>(createHeadersWithToken());
+      String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
-      ResponseEntity<UserDTO> response = restTemplate.exchange(
+      HttpHeaders headers = new HttpHeaders();
+      headers.setBearerAuth(token);
+      HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+      ResponseEntity<UserApiResponse> response = restTemplate.exchange(
           url,
           HttpMethod.GET,
           entity,
-          UserDTO.class
+          UserApiResponse.class
       );
 
-      return response.getBody();
+      UserApiResponse apiResponse = response.getBody();
+      if (apiResponse != null) {
+        return apiResponse.getData();
+      }
+      return null;
+
+    } catch (HttpClientErrorException.Forbidden e) {
+      throw new UserServiceUnavailableException("Access denied to User Service", e);
     } catch (HttpClientErrorException.NotFound e) {
       throw new UserNotFoundException(userId);
     } catch (RestClientException e) {
@@ -56,19 +61,25 @@ public class UserServiceClientImpl implements UserServiceClient {
 
   @Override
   public UserDTO getUserByEmail(String email) {
-    String url = userServiceBaseUrl + "/users/by-email?email=" + email;
-
+    String url = userServiceBaseUrl + "/users/by-email?email={email}";
     try {
-      HttpEntity<Void> entity = new HttpEntity<>(createHeadersWithToken());
+      String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+      HttpHeaders headers = new HttpHeaders();
+      headers.setBearerAuth(token);
+      HttpEntity<Void> entity = new HttpEntity<>(headers);
 
       ResponseEntity<UserDTO> response = restTemplate.exchange(
           url,
           HttpMethod.GET,
           entity,
-          UserDTO.class
+          UserDTO.class,
+          email
       );
 
       return response.getBody();
+
+    } catch (HttpClientErrorException.Forbidden e) {
+      throw new UserServiceUnavailableException("Access denied to User Service", e);
     } catch (HttpClientErrorException.NotFound e) {
       throw new UserNotFoundException(email);
     } catch (RestClientException e) {
@@ -76,3 +87,4 @@ public class UserServiceClientImpl implements UserServiceClient {
     }
   }
 }
+

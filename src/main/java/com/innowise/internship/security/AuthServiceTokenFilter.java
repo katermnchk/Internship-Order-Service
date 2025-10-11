@@ -66,14 +66,16 @@ public class AuthServiceTokenFilter extends OncePerRequestFilter {
       if (validationData != null && validationData.isValid()) {
         String userId = validationData.getUserId();
         var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            userId, null, authorities
-        );
+
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(userId, token, authorities);
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("Authenticated user with ID: {}", userId);
       } else {
         SecurityContextHolder.clearContext();
       }
+
     } catch (RestClientException e) {
       log.error("Token validation request failed. Reason: {}", e.getMessage());
       SecurityContextHolder.clearContext();

@@ -9,6 +9,6 @@ public record UserDTO(@JsonProperty("userId") Long id,
                       @JsonProperty("userSurname") String surname,
                       @JsonProperty("userBirthDate") LocalDate birthDate,
                       @JsonProperty("userEmail") String email,
-                      List<Object> cards) {
+                      @JsonProperty("userCards") List<Object> cards) {
 
 }
