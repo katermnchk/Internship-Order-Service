@@ -2,7 +2,6 @@ package com.innowise.internship.repository.impl;
 
 import com.innowise.internship.entity.Order;
 import com.innowise.internship.entity.OrderStatus;
-import com.innowise.internship.mapper.rowMapper.OrderRowMapper;
 import com.innowise.internship.repository.OrderDao;
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Repository;
 public class OrderDaoImpl implements OrderDao {
 
   private final JdbcTemplate jdbcTemplate;
-  private final OrderRowMapper orderRowMapper;
+  private final RowMapper<Order> orderRowMapper;
 
   private static final class SQL {
 
@@ -90,9 +90,7 @@ public class OrderDaoImpl implements OrderDao {
       return List.of();
     }
 
-    String placeholders = ids.stream()
-        .map(id -> "?")
-        .collect(Collectors.joining(", "));
+    String placeholders = createPlaceholders(ids);
 
     String sql = String.format(SQL.GET_ORDERS_BY_IDS, placeholders);
     return jdbcTemplate.query(sql, orderRowMapper, ids.toArray());
@@ -104,9 +102,7 @@ public class OrderDaoImpl implements OrderDao {
       return List.of();
     }
 
-    String placeholders = statuses.stream()
-        .map(s -> "?")
-        .collect(Collectors.joining(", "));
+    String placeholders = createPlaceholders(statuses);
 
     String sql = String.format(SQL.GET_ORDERS_BY_STATUSES, placeholders);
     Object[] statusNames = statuses.stream()
@@ -129,5 +125,11 @@ public class OrderDaoImpl implements OrderDao {
   @Override
   public int delete(Long id) {
     return jdbcTemplate.update(SQL.DELETE_ORDER, id);
+  }
+
+  private String createPlaceholders(List<?> list) {
+    return list.stream()
+        .map(item -> "?")
+        .collect(Collectors.joining(", "));
   }
 }

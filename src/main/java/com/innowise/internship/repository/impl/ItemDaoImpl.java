@@ -2,7 +2,6 @@ package com.innowise.internship.repository.impl;
 
 import com.innowise.internship.entity.Item;
 import com.innowise.internship.exception.ItemNotFoundException;
-import com.innowise.internship.mapper.rowMapper.ItemRowMapper;
 import com.innowise.internship.repository.ItemDao;
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Repository;
 public class ItemDaoImpl implements ItemDao {
 
   private final JdbcTemplate jdbcTemplate;
-  private final ItemRowMapper itemRowMapper;
+  private final RowMapper<Item> itemRowMapper;
 
   private static final class SQL {
 
@@ -74,12 +74,11 @@ public class ItemDaoImpl implements ItemDao {
 
     Number key = keyHolder.getKey();
 
-    if (key != null) {
-      item.setId(key.longValue());
-    } else {
+    if (key == null) {
       throw new DataRetrievalFailureException("Failed to retrieve auto-generated ID after INSERT.");
     }
 
+    item.setId(key.longValue());
     return item;
   }
 

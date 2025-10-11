@@ -1,11 +1,11 @@
 package com.innowise.internship.repository.impl;
 
 import com.innowise.internship.entity.OrderItem;
-import com.innowise.internship.mapper.rowMapper.OrderItemRowMapper;
 import com.innowise.internship.repository.OrderItemDao;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 public class OrderItemDaoImpl implements OrderItemDao {
 
   private final JdbcTemplate jdbcTemplate;
-  private final OrderItemRowMapper orderItemRowMapper;
+  private final RowMapper<OrderItem> orderItemRowMapper;
 
   private static final class SQL {
 
