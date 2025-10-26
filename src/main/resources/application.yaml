@@ -20,3 +20,6 @@ app:
 user:
   service:
     url: ${USER_SERVICE_URL}
+
+server:
+  port: ${SERVER_PORT:8082}
