@@ -16,7 +16,7 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - app_network
+      - ${NETWORK_NAME}
 
   order-service:
     build: .
@@ -26,19 +26,21 @@ services:
       postgres_order_service:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_order_service:5432/${DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_URL: jdbc:postgresql://postgres_order_service:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-
       AUTH_SERVICE_VALIDATE_URL: ${AUTH_SERVICE_VALIDATE_URL}
       USER_SERVICE_URL: ${USER_SERVICE_URL}
-
-      SERVER_PORT: 8082
+      SERVER_PORT: ${ORDER_SERVER_PORT}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:${KAFKA_PORT_INTERNAL}
+      SPRING_KAFKA_CONSUMER_GROUP_ID: order-group
+      KAFKA_TOPIC_CREATE_ORDER: ${KAFKA_TOPIC_CREATE_ORDER}
+      KAFKA_TOPIC_CREATE_PAYMENT: ${KAFKA_TOPIC_CREATE_PAYMENT}
     ports:
-      - "8082:8082"
+      - "${ORDER_SERVER_PORT}:${ORDER_SERVER_PORT}"
     networks:
-      - app_network
+      - ${NETWORK_NAME}
 
 volumes:
   pgdata_order_service:

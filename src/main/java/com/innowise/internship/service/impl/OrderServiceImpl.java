@@ -3,17 +3,24 @@ package com.innowise.internship.service.impl;
 import com.innowise.internship.dto.OrderCreateRequestDTO;
 import com.innowise.internship.dto.OrderResponseDTO;
 import com.innowise.internship.dto.UserDTO;
+import com.innowise.internship.dto.kafka.OrderCreatedEvent;
+import com.innowise.internship.entity.Item;
 import com.innowise.internship.entity.Order;
 import com.innowise.internship.entity.OrderItem;
 import com.innowise.internship.entity.OrderStatus;
 import com.innowise.internship.exception.OrderNotFoundException;
 import com.innowise.internship.mapper.OrderItemMapper;
 import com.innowise.internship.mapper.OrderMapper;
+import com.innowise.internship.repository.ItemDao;
 import com.innowise.internship.repository.OrderDao;
 import com.innowise.internship.repository.OrderItemDao;
+import com.innowise.internship.service.KafkaProducerService;
 import com.innowise.internship.service.OrderService;
 import com.innowise.internship.service.UserServiceClient;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +35,8 @@ public class OrderServiceImpl implements OrderService {
   private final OrderMapper orderMapper;
   private final OrderItemMapper orderItemMapper;
   private final UserServiceClient userClient;
+  private final ItemDao itemDao;
+  private final KafkaProducerService kafkaProducerService;
 
   private void loadOrderItems(Order order) {
     if (order.getItems() == null) {
@@ -65,6 +74,14 @@ public class OrderServiceImpl implements OrderService {
 
     List<OrderItem> savedItems = orderItemDao.findByOrderId(savedOrder.getId());
     savedOrder.setItems(savedItems);
+
+    BigDecimal totalAmount = calculateTotalAMount(itemsToSave);
+    OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(
+            String.valueOf(savedOrder.getId()),
+            String.valueOf(savedOrder.getUserId()),
+            totalAmount
+    );
+    kafkaProducerService.sendOrderCreatedEvent(orderCreatedEvent);
 
     return enrichResponse(savedOrder);
   }
@@ -121,5 +138,41 @@ public class OrderServiceImpl implements OrderService {
     orderItemDao.deleteByOrderId(id);
 
     orderDao.delete(id);
+  }
+
+  @Override
+  @Transactional
+  public void updateOrderStatusAfterPayment(Long orderId, String paymentStatus) {
+      Order order = orderDao.findById(orderId).orElseThrow(
+              () -> new OrderNotFoundException(orderId)
+      );
+
+      if ("SUCCESS".equalsIgnoreCase(paymentStatus)) {
+          order.setStatus(OrderStatus.PROCESSING);
+      } else {
+          order.setStatus(OrderStatus.CANCELLED);
+      }
+      orderDao.update(order);
+  }
+
+  private BigDecimal calculateTotalAMount(List<OrderItem> items) {
+      List<Long> itemIds = items.stream().map(OrderItem::getItemId).toList();
+
+      if (itemIds.isEmpty()) {
+          return BigDecimal.ZERO;
+      }
+
+      List<Item> itemsFromDb = itemDao.findByIds(itemIds);
+      Map<Long, BigDecimal> priceMap = itemsFromDb.stream()
+              .collect(Collectors.toMap(Item::getId, Item::getPrice));
+
+      BigDecimal totalAmount = BigDecimal.ZERO;
+      for (OrderItem item : items) {
+          BigDecimal price = priceMap.get(item.getItemId());
+          BigDecimal amount = new BigDecimal(item.getQuantity());
+          BigDecimal total = price.multiply(amount);
+          totalAmount = totalAmount.add(total);
+      }
+      return totalAmount;
   }
 }
