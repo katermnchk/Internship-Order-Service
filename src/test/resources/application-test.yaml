@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    bootstrap-servers: mock:9092
+
+app:
+  kafka:
+    topic:
+      create-payment: ${KAFKA_TOPIC_CREATE_PAYMENT:test-create-payment}
+      update-payment: ${KAFKA_TOPIC_UPDATE_PAYMENT:test-update-payment}

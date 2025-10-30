@@ -14,6 +14,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.kafka.KafkaContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -47,6 +49,14 @@ public abstract class AbstractIntegrationTest {
               "message": "User fetched successfully"
             }
             """, userId, userId);
+  }
+
+  public static final KafkaContainer KAFKA_CONTAINER = new KafkaContainer(
+          DockerImageName.parse("apache/kafka:3.7.0")
+  );
+
+  static {
+    KAFKA_CONTAINER.start();
   }
 
   static {
@@ -84,8 +94,14 @@ public abstract class AbstractIntegrationTest {
         () -> "http://localhost:8089/api/v1/auth/validate");
     registry.add("USER_SERVICE_URL",
         () -> "http://localhost:8089/api/v1");
+    registry.add("spring.kafka.bootstrap-servers", KAFKA_CONTAINER::getBootstrapServers);
+    registry.add("app.kafka.topic.create-order",
+          () -> "test-create-order");
+    registry.add("app.kafka.topic.create-payment",
+          () -> "test-create-payment");
+    registry.add("spring.kafka.consumer.group-id",
+          () -> "test-order-group");
   }
-
 
   @Autowired
   protected MockMvc mockMvc;
