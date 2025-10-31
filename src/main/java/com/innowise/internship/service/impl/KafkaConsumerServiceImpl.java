@@ -4,11 +4,13 @@ import com.innowise.internship.dto.kafka.PaymentCreatedEvent;
 import com.innowise.internship.service.KafkaConsumerService;
 import com.innowise.internship.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class KafkaConsumerServiceImpl implements KafkaConsumerService {
 
     private final OrderService orderService;
@@ -19,10 +21,9 @@ public class KafkaConsumerServiceImpl implements KafkaConsumerService {
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void handlePaymentCreatedEvent(PaymentCreatedEvent paymentCreatedEvent) {
-
+        log.info("Received PaymentCreatedEvent for orderId: {}", paymentCreatedEvent.getOrderId());
         Long orderId = Long.parseLong(paymentCreatedEvent.getOrderId());
         String paymentStatus = paymentCreatedEvent.getPaymentStatus();
         orderService.updateOrderStatusAfterPayment(orderId, paymentStatus);
-
     }
 }

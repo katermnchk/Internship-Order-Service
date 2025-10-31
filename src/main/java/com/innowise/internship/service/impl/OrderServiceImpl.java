@@ -23,11 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
   private final OrderDao orderDao;
@@ -81,6 +83,7 @@ public class OrderServiceImpl implements OrderService {
             String.valueOf(savedOrder.getUserId()),
             totalAmount
     );
+    log.info("Sending OrderCreatedEvent for orderId {}", savedOrder.getId());
     kafkaProducerService.sendOrderCreatedEvent(orderCreatedEvent);
 
     return enrichResponse(savedOrder);
@@ -143,14 +146,17 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public void updateOrderStatusAfterPayment(Long orderId, String paymentStatus) {
+      log.info("Received payment status: {} for orderId: {}", paymentStatus, orderId);
       Order order = orderDao.findById(orderId).orElseThrow(
               () -> new OrderNotFoundException(orderId)
       );
 
       if ("SUCCESS".equalsIgnoreCase(paymentStatus)) {
           order.setStatus(OrderStatus.PROCESSING);
+          log.info("Setting status to PROCESSING for orderId {}", orderId);
       } else {
           order.setStatus(OrderStatus.CANCELLED);
+          log.info("Setting status to CANCELLED for orderId {}", orderId);
       }
       orderDao.update(order);
   }
