@@ -3,7 +3,7 @@ name: Innowise Order Service CI Pipeline
 on:
   push:
     branches:
-      - master
+      - main
       - 'feature/**'
 
 jobs:
