@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.innowise.internship.repository.OrderDao;
 import com.innowise.internship.repository.OrderItemDao;
+import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,11 +56,9 @@ public abstract class AbstractIntegrationTest {
           DockerImageName.parse("apache/kafka:3.7.0")
   );
 
-  static {
+  @BeforeAll
+  static void beforeAll() {
     KAFKA_CONTAINER.start();
-  }
-
-  static {
     startWireMockServer();
   }
 
