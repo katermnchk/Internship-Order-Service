@@ -18,15 +18,20 @@ import static org.mockito.Mockito.when;
 import com.innowise.internship.dto.OrderCreateRequestDTO;
 import com.innowise.internship.dto.OrderResponseDTO;
 import com.innowise.internship.dto.UserDTO;
+import com.innowise.internship.entity.Item;
 import com.innowise.internship.entity.Order;
 import com.innowise.internship.entity.OrderItem;
 import com.innowise.internship.entity.OrderStatus;
 import com.innowise.internship.exception.OrderNotFoundException;
 import com.innowise.internship.mapper.OrderItemMapper;
 import com.innowise.internship.mapper.OrderMapper;
+import com.innowise.internship.repository.ItemDao;
 import com.innowise.internship.repository.OrderDao;
 import com.innowise.internship.repository.OrderItemDao;
+import com.innowise.internship.service.KafkaProducerService;
 import com.innowise.internship.service.UserServiceClient;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +62,12 @@ class OrderServiceImplTest {
 
   @Mock
   private UserServiceClient userClient;
+
+  @Mock
+  private ItemDao itemDao;
+
+  @Mock
+  private KafkaProducerService kafkaProducerService;
 
   @InjectMocks
   private OrderServiceImpl orderService;
@@ -92,6 +103,8 @@ class OrderServiceImplTest {
     OrderCreateRequestDTO createDto = mock(OrderCreateRequestDTO.class);
     List<OrderItem> items = List.of(new OrderItem(null, null, 1L, 2));
 
+    Item mockItem = new Item(1L, "Test Item", new BigDecimal("10.00"));
+
     when(orderMapper.toEntity(createDto)).thenReturn(orderEntity);
     when(orderDao.save(orderEntity)).thenReturn(orderEntity);
     when(createDto.getStatus()).thenReturn("new");
@@ -100,6 +113,7 @@ class OrderServiceImplTest {
     when(userClient.getUserById(anyLong())).thenReturn(mock(UserDTO.class));
     when(orderMapper.toResponseDto(any(Order.class))).thenReturn(mock(OrderResponseDTO.class));
     when(orderItemDao.findByOrderId(anyLong())).thenReturn(items);
+    when(itemDao.findByIds(anyList())).thenReturn(List.of(mockItem));
 
     orderService.createOrder(createDto);
 

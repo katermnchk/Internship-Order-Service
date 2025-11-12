@@ -11,11 +11,27 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/main-changelog.xml
 
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    properties:
+      spring.json.trusted.packages: '*'
+
 app:
   api:
     base-path: /api/v1
   auth-service:
     validate-url: ${AUTH_SERVICE_VALIDATE_URL}
+  kafka:
+    topic:
+      create-order: ${KAFKA_TOPIC_CREATE_ORDER}
+      create-payment: ${KAFKA_TOPIC_CREATE_PAYMENT}
 
 user:
   service:

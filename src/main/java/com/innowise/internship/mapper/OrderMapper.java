@@ -6,8 +6,9 @@ import com.innowise.internship.entity.Order;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 
-@Mapper(componentModel = "spring", uses = OrderItemMapper.class)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = OrderItemMapper.class)
 public interface OrderMapper {
 
   @Mapping(target = "id", ignore = true)

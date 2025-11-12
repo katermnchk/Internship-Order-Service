@@ -13,5 +13,6 @@ public interface OrderService {
   List<OrderResponseDTO> getOrdersByStatuses(List<OrderStatus> statuses);
   OrderResponseDTO updateOrder(Long id, OrderCreateRequestDTO dto);
   void deleteOrderById(Long id);
+  void updateOrderStatusAfterPayment(Long orderId, String paymentStatus);
 
 }
